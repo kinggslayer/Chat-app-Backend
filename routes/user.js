@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
         const collection = database.collection("users"); // Your collection name
 
         // Fetch usernames and avatars
-        const users = await collection.find({}, { projection: { username: 1, avatar: 1, _id: 0 } }).toArray();
+        const users = await collection.find({}, { projection: { username: 1, avatar: 1, _id: 1 } }).toArray();
         res.json(users);
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -22,4 +22,8 @@ router.get("/", async (req, res) => {
         await client.close();
     }
 });
+
+
+
+
 module.exports = router;
