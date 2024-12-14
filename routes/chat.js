@@ -15,10 +15,7 @@ router.get("/:receiverId", async (req, res) => {
   }
 
   try {
-    if (
-      !mongoose.Types.ObjectId.isValid(senderId) ||
-      !mongoose.Types.ObjectId.isValid(receiverId)
-    ) {
+    if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) {
       return res.status(400).json({ error: "Invalid sender or receiver ID." });
     }
 
