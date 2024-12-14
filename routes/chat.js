@@ -7,37 +7,39 @@ const router = express.Router();
 
 // GET Route to fetch messages between sender and receiver
 router.get("/:receiverId", async (req, res) => {
-  const { senderId,receiverId  } = req.body;
-
+  const { senderId } = req.query; // Get senderId from query parameters
+  const { receiverId } = req.params; // Get receiverId from route params
 
   if (!senderId) {
     return res.status(401).json({ error: "Unauthorized access, please log in." });
   }
 
   try {
-    // Ensure sender and receiver IDs are valid ObjectIds
-    if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(senderId) ||
+      !mongoose.Types.ObjectId.isValid(receiverId)
+    ) {
       return res.status(400).json({ error: "Invalid sender or receiver ID." });
     }
 
-    // Fetch messages between sender and receiver
     const messages = await Message.find({
       $or: [
         { sender: senderId, receiver: receiverId },
         { sender: receiverId, receiver: senderId },
-      ]
-    }).sort({ createdAt: 1 });  // Sort messages by sent time in ascending order
+      ],
+    }).sort({ createdAt: 1 });
 
     if (!messages.length) {
       return res.status(404).json({ error: "No messages found." });
     }
 
-    res.json(messages);  // Return the list of messages in JSON format
+    res.json(messages);
   } catch (error) {
     console.error("Error fetching messages:", error);
     res.status(500).json({ error: "Server error. Please try again later." });
   }
 });
+
 
 // POST Route to send a new message
 router.post("/", async (req, res) => {
