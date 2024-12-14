@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const mongoose = require("mongoose");
-const Chat = require('../models/Chat');
-const Message = require('../models/Message');
-const User = require('../models/User');
+const Chat = require("../models/Chat");
+const Message = require("../models/Message");
+const User = require("../models/User");
 const router = express.Router();
 
 // GET Route to fetch messages between sender and receiver
@@ -15,10 +15,12 @@ router.get("/:receiverId", async (req, res) => {
   }
 
   try {
+    // Validate ObjectIds
     if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) {
       return res.status(400).json({ error: "Invalid sender or receiver ID." });
     }
 
+    // Fetch messages
     const messages = await Message.find({
       $or: [
         { sender: senderId, receiver: receiverId },
@@ -26,24 +28,24 @@ router.get("/:receiverId", async (req, res) => {
       ],
     }).sort({ createdAt: 1 });
 
-    if (!messages.length) {
-      return res.status(404).json({ error: "No messages found." });
-    }
-
-    res.json(messages);
+    // Send response
+    res.status(200).json(messages);
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error("Error fetching messages:", error.message);
     res.status(500).json({ error: "Server error. Please try again later." });
   }
 });
-
 
 // POST Route to send a new message
 router.post("/", async (req, res) => {
   const { sender, receiver, content } = req.body;
 
+  if (!sender || !receiver || !content) {
+    return res.status(400).json({ error: "Sender, receiver, and content are required." });
+  }
+
   try {
-    // Check if sender and receiver are valid ObjectId strings
+    // Validate ObjectIds
     if (!mongoose.Types.ObjectId.isValid(sender) || !mongoose.Types.ObjectId.isValid(receiver)) {
       return res.status(400).json({ error: "Invalid sender or receiver ID." });
     }
@@ -52,13 +54,17 @@ router.post("/", async (req, res) => {
     const message = new Message({
       sender,
       receiver,
-      content
+      content,
+      createdAt: new Date(), // Explicitly set the createdAt field
     });
 
     // Save the message to the database
     await message.save();
 
-    // Return the saved message as a response
+    // Emit the message to connected clients using socket.io (if integrated)
+    io.to(receiver).emit("newMessage", message);  // Emits to receiver's socket room
+
+    // Return the saved message
     res.status(201).json(message);
   } catch (error) {
     console.error("Error saving message:", error.message);
