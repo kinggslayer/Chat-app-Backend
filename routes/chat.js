@@ -5,10 +5,9 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const router = express.Router();
 
-// GET Route to fetch messages between sender and receiver
 router.get("/:receiverId", async (req, res) => {
-  const { senderId } = req.query; // Get senderId from query parameters
-  const { receiverId } = req.params; // Get receiverId from route params
+  const { senderId } = req.query;
+  const { receiverId } = req.params;
 
   if (!senderId) {
     return res.status(401).json({ error: "Unauthorized access, please log in." });
@@ -45,7 +44,6 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    // Validate ObjectIds
     if (!mongoose.Types.ObjectId.isValid(sender) || !mongoose.Types.ObjectId.isValid(receiver)) {
       return res.status(400).json({ error: "Invalid sender or receiver ID." });
     }
@@ -55,13 +53,13 @@ router.post("/", async (req, res) => {
       sender,
       receiver,
       content,
-      createdAt: new Date(), // Explicitly set the createdAt field
+      createdAt: new Date(),
     });
 
     // Save the message to the database
     await message.save();
 
-    // Emit the message to connected clients using socket.io (if integrated)
+    // Emit the message to connected clients using socket.io
     io.to(receiver).emit("newMessage", message);  // Emits to receiver's socket room
 
     // Return the saved message

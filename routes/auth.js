@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Assuming the User schema file
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -44,9 +44,11 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Check if the email exists
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({success: false, error: 'User not found' });
 
+    // Check if the password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({success: false, error: 'Invalid credentials' });
 

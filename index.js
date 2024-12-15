@@ -3,13 +3,13 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const connectToMongo = require("./db");
-const Message = require("./models/Message"); // Assuming you have a Message model
+const Message = require("./models/Message");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Your frontend URL
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
@@ -26,11 +26,9 @@ app.use(cors());
 // Routes
 const userRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
-const testRoutes = require("./routes/test");
 const usersRoutes = require("./routes/user");
 
 app.use("/api/auth", userRoutes);
-app.use("/api/test", testRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/messages", chatRoutes);
 
