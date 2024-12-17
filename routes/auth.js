@@ -32,7 +32,6 @@ router.post('/signup', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'User registered successfully!',
-      authtoken: token,  // Send token back to frontend
     });
   } catch (err) {
     res.status(400).json({success: false, error: err.message });
