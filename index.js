@@ -21,16 +21,32 @@ connectToMongo();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+// app.use(cors());
+const allowedOrigins = ['http://localhost:3000']; 
+
+// Use CORS middleware with the 'credentials' option set to true
+app.use(cors({
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // Allow cookies to be sent
+}));
 
 // Routes
 const userRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
 const usersRoutes = require("./routes/user");
+const passwordRoutes = require("./routes/forgotPassword");
 
 app.use("/api/auth", userRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/messages", chatRoutes);
+app.use("/api", passwordRoutes);
 
 // Default route
 app.get("/", (req, res) => {
