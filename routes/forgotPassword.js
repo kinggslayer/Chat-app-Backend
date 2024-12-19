@@ -5,6 +5,7 @@ const User = require('../models/User');
 const nodemailer = require('nodemailer');
 
 const router = express.Router();
+const frontend_url = "";
 
 // Send Password Reset Email
 router.post('/forgot-password', async (req, res) => {
@@ -15,29 +16,28 @@ router.post('/forgot-password', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
-    console.log(user);
     // Generate a password reset token
     const resetToken = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '1h' });
-    
+
     // Save the reset token to the user document (optional, if you want to store the token for validation)
-    user.token = resetToken;
+    const hashedToken = await bcrypt.hash(resetToken, 10);
+    user.resetToken = hashedToken;
+    user.resetTokenExpiry = Date.now() + 3600000; // 1 hour expiry
     await user.save();
-    console.log("hi")
-    console.log(user);
 
     // Create a mail transporter
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'your-email@gmail.com', // Your email
+        user: 'spd123452@gmail.com', // Your email
         pass: 'your-email-password'    // Your email password or app password
       }
     });
 
     // Send the reset email
-    const resetLink = `http://yourfrontendurl.com/reset-password/${resetToken}`;
+    const resetLink = `${frontend_url}/reset-password/${resetToken}`;
     const mailOptions = {
-      from: 'your-email@gmail.com',
+      from: 'spd123452@gmail.com',
       to: email,
       subject: 'Password Reset Request',
       text: `You requested a password reset. Please click the following link to reset your password: ${resetLink}`
