@@ -3,7 +3,6 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const connectToMongo = require("./db");
-const Message = require("./models/Message");
 const directMessageHandlers = require('./socket/directMessageHandlers');
 const groupHandlers = require('./socket/groupHandlers');
 
@@ -27,38 +26,29 @@ app.use(express.json());
 const allowedOrigins = ['http://localhost:3000'];
 
 // Use CORS middleware with the 'credentials' option set to true
-app.use(cors({
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'), false);
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true, // Allow cookies to be sent
-}));
+app.use(cors());
+
 
 // Routes
-const userRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
 const usersRoutes = require("./routes/user");
 const passwordRoutes = require("./routes/forgotPassword");
 const groupRoutes = require('./routes/group');
 
-app.use("/api/auth", userRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/user", usersRoutes);
 app.use("/api/messages", chatRoutes);
 app.use("/api", passwordRoutes);
 app.use('/api', groupRoutes);
 
-// Default route
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
 
-
+app.set('io', io);
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 

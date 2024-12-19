@@ -26,7 +26,7 @@ router.post('/signup', async (req, res) => {
     await user.save();
 
     // Create a JWT token
-    const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '24h' });
 
     // Send the response with the token
     res.status(201).json({
@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({success: false, error: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '24h' });
     res.json({success: true, token, user });
   } catch (err) {
     res.status(400).json({success: false, error: err.message });

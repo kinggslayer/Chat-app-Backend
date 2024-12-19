@@ -20,33 +20,51 @@ router.get('/groups/:userId', auth, async (req, res) => {
 });
 
 // Create a new group
-router.post('/groups', auth, async (req, res) => {
-  try {
-    const { name, members, createdBy } = req.body;
+router.post('/groups',auth, async (req, res) => {
+    try {
+        const { name, members, createdBy } = req.body;
 
-    const group = new Group({
-      name,
-      members,
-      createdBy
-    });
+        // Add input validation
+        if (!name || !members?.length || !createdBy) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
 
-    await group.save();
+        // Create and save the group
+        const group = new Group({
+            name,
+            members,
+            createdBy
+        });
 
-    // Populate the saved group with member details
-    const populatedGroup = await Group.findById(group._id)
-      .populate('members', 'username avatar')
-      .populate('createdBy', 'username');
+        await group.save();
 
-    // Emit group creation event to all members
-    const io = req.app.get('io');
-    members.forEach(memberId => {
-      io.to(memberId.toString()).emit('group_update', populatedGroup);
-    });
+        // Populate the saved group with member details
+        const populatedGroup = await Group.findById(group._id)
+            .populate('members', 'username')
+            .populate('createdBy', 'username')
+            .lean(); // Convert to plain JavaScript object
 
-    res.status(201).json(populatedGroup);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
+        // Get socket.io instance
+        const io = req.app.get('io');
+        if (!io) {
+            throw new Error('Socket.IO instance not found - real-time updates unavailable');
+        }
+        // Emit group creation event to all members
+
+        members.forEach(memberId => {
+            io.to(memberId.toString()).emit('group_update', populatedGroup);
+        });
+
+        // Send response
+        return res.status(201).json(populatedGroup);
+
+    } catch (error) {
+        console.error('Group creation error:', error);
+        return res.status(500).json({ 
+            message: 'Failed to create group', 
+            error: error.message 
+        });
+    }
 });
 
 // Get group messages
@@ -62,6 +80,31 @@ router.get('/groups/:groupId/messages', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+// saving messages
+router.post('/api/:groupId/:sender', async (req, res) => {
+    const { groupId, sender } = req.params;
+    const {content} = req.body;
+
+    if (!groupId || !sender || !content) {
+      return res.status(400).json({ error: 'groupId, sender, and content are required' });
+    }
+
+    try {
+      const newMessage = new GroupMessage({
+        groupId,
+        sender,
+        content,
+      });
+
+      await newMessage.save();
+      return res.status(201).json({ message: 'Message saved successfully', data: newMessage });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error saving the message' });
+    }
+  });
+
 
 // Add member to group
 router.post('/groups/:groupId/members', auth, async (req, res) => {

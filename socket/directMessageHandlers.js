@@ -23,6 +23,7 @@ module.exports = (io, socket) => {
 
       // Broadcast message to the room
       io.to(receiver).emit("receive_message", message);
+      console.log("Backend about to emit message:", message);
     } catch (error) {
       console.error('Error handling direct message:', error);
     }

@@ -18,6 +18,10 @@ const groupSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  avatar:{
+    type: String,
+    default: "https://img.freepik.com/premium-vector/group-people-with-words-one-with-name-man_1187092-24459.jpg?uid=R177166562&ga=GA1.1.2069800871.1733152729&semt=ais_hybrid"
   }
 });
 

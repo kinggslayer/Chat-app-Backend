@@ -1,16 +1,38 @@
 const jwt = require("jsonwebtoken");
-const JWT_token='hariaibkasdnf';
-const fetchuser= (req, res, next) => {
-    const token= req.header("auth-token");
-    if(!token){
-        res.status(401).send({error:"please authenticate with a valid user id"});
+const JWT_SECRET = 'secretkey'; // Consider using an environment variable
+
+const fetchuser = (req, res, next) => {
+    // Get token from header
+    const token = req.header("auth-token");
+
+    // Check if token exists
+    if (!token) {
+        return res.status(401).json({ 
+            error: "Access denied. No token provided." 
+        });
     }
+
     try {
-        const data = jwt.verify(token,JWT_token);
-        req.user=data.user;
+        // Verify token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded.user;
         next();
     } catch (error) {
-        res.status(401).send({error:"please authenticate with a valid user id"});
+        // More specific error handling
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ 
+                error: "Invalid token." 
+            });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ 
+                error: "Token expired." 
+            });
+        }
+        
+        return res.status(500).json({ 
+            error: "Failed to authenticate token." 
+        });
     }
-}
+};
+
 module.exports = fetchuser;
