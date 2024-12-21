@@ -57,11 +57,11 @@ io.on('connection', (socket) => {
   groupHandlers(io, socket);
 
   // Join user to their personal room for direct messages
-  const userId = socket.handshake.query.userId;
-  if (userId) {
-    socket.join(userId);
-    console.log(`User ${userId} joined their personal room`);
-  }
+  // const userId = socket.handshake.query.userId;
+  // if (userId) {
+  //   socket.join(userId);
+  //   console.log(`User ${userId} joined their personal room`);
+  // }
 
   // Handle disconnection
   socket.on('disconnect', () => {

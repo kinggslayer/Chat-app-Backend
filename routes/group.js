@@ -68,7 +68,7 @@ router.post('/groups',auth, async (req, res) => {
 });
 
 // Get group messages
-router.get('/groups/:groupId/messages', auth, async (req, res) => {
+router.get('/groups/:groupId/messages', async (req, res) => {
   try {
     const { groupId } = req.params;
     const messages = await GroupMessage.find({ groupId })
@@ -82,10 +82,11 @@ router.get('/groups/:groupId/messages', auth, async (req, res) => {
 });
 
 // saving messages
-router.post('/api/:groupId/:sender', async (req, res) => {
+// NOT REQUIRED IF USED SOCKET
+router.post('groups/:groupId/:sender', async (req, res) => {
     const { groupId, sender } = req.params;
     const {content} = req.body;
-
+    console.log("hi");
     if (!groupId || !sender || !content) {
       return res.status(400).json({ error: 'groupId, sender, and content are required' });
     }
