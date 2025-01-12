@@ -15,7 +15,7 @@ This is the backend for a real-time chat application built with **Node.js**, **E
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/chat-app-backend.git
+    git clone https://github.com/kinggslayer/Chat-app-Backend.git
     cd chat-app-backend
     ```
 
